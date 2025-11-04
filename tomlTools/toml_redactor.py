@@ -122,6 +122,10 @@ class TOMLRedactor:
         # Remove quotes if present
         clean_value = value.strip().strip('"\'')
 
+        # Skip redacted values
+        if clean_value in ('***REDACTED***'):
+            return False
+
         # Skip if it's a variable reference
         if clean_value.startswith('$') or clean_value.startswith('${'):
             return False
