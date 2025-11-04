@@ -123,7 +123,7 @@ class TOMLRedactor:
         clean_value = value.strip().strip('"\'')
 
         # Skip redacted values
-        if clean_value in ('***REDACTED***'):
+        if clean_value == '***REDACTED***':
             return False
 
         # Skip if it's a variable reference
@@ -183,6 +183,11 @@ class TOMLRedactor:
             return line
 
         indent, key, value = match.groups()
+
+        # Skip if value is already redacted
+        value_stripped = value.strip().strip('"\'')
+        if value_stripped == self.redaction_text:
+            return line
 
         # Check if key or value is sensitive
         if self.is_sensitive_key(key) or self.is_sensitive_value(value):
