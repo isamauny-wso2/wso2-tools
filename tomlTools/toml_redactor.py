@@ -60,6 +60,7 @@ class TOMLRedactor:
         r'_threads$',
         r'_pool_size$',
         r'_interval$',
+        r'_endpoint$',  # URLs/endpoints (e.g., token_endpoint)
     ]
 
     # Additional patterns for values that look sensitive
@@ -127,7 +128,9 @@ class TOMLRedactor:
             return False
 
         # Skip if it's a variable reference
-        if clean_value.startswith('$') or clean_value.startswith('${'):
+        # Matches: $var, ${var}, {$var}
+        if clean_value.startswith('$') or clean_value.startswith('${') or \
+           (clean_value.startswith('{$') and clean_value.endswith('}')):
             return False
 
         # Skip boolean values
@@ -187,6 +190,12 @@ class TOMLRedactor:
         # Skip if value is already redacted
         value_stripped = value.strip().strip('"\'')
         if value_stripped == self.redaction_text:
+            return line
+
+        # Skip if value is a variable reference (even if key is sensitive)
+        # Matches: $var, ${var}, {$var}
+        if value_stripped.startswith('$') or value_stripped.startswith('${') or \
+           (value_stripped.startswith('{$') and value_stripped.endswith('}')):
             return line
 
         # Check if key or value is sensitive
